@@ -1,0 +1,37 @@
+﻿{
+   "ContextClassName": "TimeportalContext",
+   "ContextNamespace": null,
+   "DefaultDacpacSchema": null,
+   "FilterSchemas": false,
+   "IncludeConnectionString": false,
+   "ModelNamespace": null,
+   "OutputContextPath": "Infrastructure",
+   "OutputPath": "Models",
+   "ProjectRootNamespace": "Api",
+   "Schemas": null,
+   "SelectedHandlebarsLanguage": 0,
+   "SelectedToBeGenerated": 0,
+   "Tables": [
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[Employee]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[Request]"
+      },
+      {
+         "HasPrimaryKey": true,
+         "Name": "[dbo].[RequestType]"
+      }
+   ],
+   "UseDatabaseNames": false,
+   "UseDbContextSplitting": false,
+   "UseFluentApiOnly": true,
+   "UseHandleBars": false,
+   "UseInflector": false,
+   "UseLegacyPluralizer": false,
+   "UseNodaTime": false,
+   "UseSpatial": false,
+   "UseStoredProcedures": false
+}
