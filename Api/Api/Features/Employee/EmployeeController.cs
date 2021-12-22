@@ -46,6 +46,12 @@ namespace Api.Controllers
             return Ok();
         }
 
+        [HttpPatch("UpdateEmployeeInfo")]
+        public async Task<ActionResult> UpdateEmployeeInfo(UpdateEmployeeInfoDto model)
+        {
+            await _employeeService.UpdateEmployeeAsync(model.Id, model.FirstName, model.LastName, model.Email);
+            return Ok();
+        }
 
     }
 }

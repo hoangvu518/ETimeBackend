@@ -10,6 +10,8 @@ namespace Api.Services.Interfaces
     public interface IEmployeeService
     {
         Task CreateEmployeeAsync(string firstName, string lastName, int? managerId, decimal? salary, string email);
+
+        Task UpdateEmployeeAsync(int employeeId, string firstName, string lastName, string email);
         Task UpdateEmployeeManagerAsync(int employeeId, int? managerId);
 
         Task<List<EmployeeSimpleDto>> GetAllEmployeesAsync();

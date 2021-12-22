@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Api.Core.ResponseDto;
+using System.ComponentModel.DataAnnotations;
+using Api.Exceptions;
 
 namespace Api.Services
 {
@@ -23,7 +25,7 @@ namespace Api.Services
             var requestNameExists = await _dbContext.RequestType.AnyAsync(x => x.Name == requestName);
             if (requestNameExists)
             {
-                throw new Exception("Request Name already exists.");
+                throw new RecordDuplicateException("Invalid Request Name. Request Name already exists.");
             }
 
             var newRequestType = new RequestType(requestName);

@@ -18,26 +18,48 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace Api
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
 
         public IConfiguration Configuration { get; }
+        private readonly IWebHostEnvironment _currentEnvironment;
+        public Startup(IConfiguration configuration, IWebHostEnvironment environment)
+        {
+            Configuration = configuration;
+            _currentEnvironment = environment;
+        }
+
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers()
+                    .AddNewtonsoftJson(options =>
+                    {
+                        options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+                        options.SerializerSettings.MaxDepth = 1;
+                        options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
+                    });
+            //.AddNewtonsoftJson(options => options.SerializerSettings.MaxDepth = );
             services.AddDbContext<TimeportalContext>(options =>
             {
-                options.UseSqlServer(Configuration.GetConnectionString("AppConnectionString"));
-            });
+                //options.UseSqlServer(Configuration.GetConnectionString("AppConnectionString"))
+                //.EnableSensitiveDataLogging();
+                if (_currentEnvironment.IsDevelopment())
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("AppConnectionString"))
+                        .EnableSensitiveDataLogging(); ;
+                }
+                else
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("AppConnectionString"));
+                }
+            }
+            );
 
             services.InjectDependencies();
             //uncomment for CSRF

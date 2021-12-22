@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Api.Core.ResponseDto;
+using Api.Exceptions;
 
 namespace Api.Services
 {
@@ -23,7 +25,7 @@ namespace Api.Services
 
             if (request is null)
             {
-                throw new ArgumentException("Invalid reqest Id");
+                throw new RecordNotFoundException("Invalid reqest Id");
             }
 
             request.Approve();
@@ -38,20 +40,20 @@ namespace Api.Services
             var requestTypeExits = await _dbContext.RequestType.AnyAsync(x=> x.Id == requestTypeId);
             if (!requestTypeExits)
             {
-                throw new ArgumentException("Invalid request type Id");
+                throw new RecordNotFoundException("Invalid request type Id");
             }
 
             var requestEmployeeExists = await _dbContext.Employee.AnyAsync(x=> x.Id == requestedBy);
 
             if (!requestEmployeeExists)
             {
-                throw new ArgumentException("Invalid employee Id");
+                throw new RecordNotFoundException("Invalid employee Id");
             }
 
             var unapprovedRequestCount = await _dbContext.Request.CountAsync(x => x.RequestedByEmployeeId == requestedBy && x.IsApproved == false);
             if (unapprovedRequestCount >= 5)
             {
-                throw new Exception("An employee can have a maximum of 5 unapproved requests.");
+                throw new BusinessLogicException("An employee can have a maximum of 5 unapproved requests.");
             }
 
             var newRequest = new Request(requestTitle, requestDescription, requestTypeId, requestedBy);
@@ -59,6 +61,27 @@ namespace Api.Services
             await _dbContext.SaveChangesAsync();
 
             return newRequest;
+        }
+
+        public Task<List<FullRequestInfoDto>> GetFullRequestInfoByEmployeeAsync(string employeeName)
+        {
+            var request = _dbContext.Request.Where(x => x.RequestedByEmployee.FirstName == employeeName || x.RequestedByEmployee.LastName == employeeName)
+                                            .Include(x => x.RequestedByEmployee)
+                                            .Include(x => x.RequestType)
+                                            .Select(x => new FullRequestInfoDto
+                                            {
+                                                Id = x.Id,
+                                                RequestTitle = x.RequestTitle,
+                                                RequestDescription = x.RequestDescription,
+                                                IsApproved = x.IsApproved,
+                                                RequestedByEmployeeId = x.RequestedByEmployeeId,
+                                                RequestedEmployeeFirstName = x.RequestedByEmployee.FirstName,
+                                                RequestedEmployeeLastName = x.RequestedByEmployee.LastName,
+                                                RequestTypeId = x.RequestTypeId,
+                                                RequestTypeName = x.RequestType.Name
+                                            })
+                                            .ToListAsync();
+            return request;
         }
 
         public async Task<Request> GetRequestAsync(int requestId)

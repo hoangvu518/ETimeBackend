@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Api.Exceptions;
 
 namespace Api.Services
 {
@@ -27,14 +28,14 @@ namespace Api.Services
 
         public async Task CreateEmployeeAsync(string firstName, string lastName, int? managerId, decimal? salary, string email)
         {
-            var emailAlreadyExists = _dbContext.Employee.Any(x => x.Email == email);
+            var emailAlreadyExists = await _dbContext.Employee.AnyAsync(x => x.Email == email);
             if (emailAlreadyExists)
             {
-                throw new ArgumentException($"Email already exists. Cannot add new employee with duplicate emails");
+                throw new RecordDuplicateException($"Email already exists. Cannot add new employee with duplicate emails.");
             }
 
             var employee = new Employee(firstName, lastName, managerId, salary, email);
-            _dbContext.Employee.Add(employee);
+            await _dbContext.Employee.AddAsync(employee);
             await _dbContext.SaveChangesAsync();
 
         }
@@ -43,23 +44,23 @@ namespace Api.Services
         {
             if (!(managerId is null))
             {
-                var manager = _dbContext.Employee.Find(managerId);
+                var manager = await _dbContext.Employee.FindAsync(managerId);
                 if (manager is null)
                 {
-                    throw new ArgumentException($"Invalid manager Id");
+                    throw new RecordNotFoundException($"Invalid manager Id. Manager Id doesn't exist.");
                 }
             }
             
-            var employee = _dbContext.Employee.Find(employeeId);
+            var employee = await _dbContext.Employee.FindAsync(employeeId);
 
             if (employee is null)
             {
-                throw new ArgumentException($"Invalid employee Id");
+                throw new RecordNotFoundException($"Invalid employee Id. Employee Id doesn't exist.");
             }
 
             employee.UpdateManager(managerId);
-            _dbContext.Attach(employee);
-            _dbContext.Entry(employee).Property(nameof(Employee.ManagerId)).IsModified = true;
+            //_dbContext.Attach(employee);
+            //_dbContext.Entry(employee).Property(nameof(Employee.ManagerId)).IsModified = true;
             await _dbContext.SaveChangesAsync();
         }
 
@@ -74,6 +75,20 @@ namespace Api.Services
             }).ToListAsync();
 
             return employees;
+
+        }
+
+        public async Task UpdateEmployeeAsync(int employeeId, string firstName, string lastName, string email)
+        {
+            var employee = await _dbContext.Employee.FindAsync(employeeId);
+            if (employee is null)
+            {
+                throw new RecordNotFoundException($"Invalid employee id. Employee Id doesn't exist.");
+            }
+
+            employee.UpdateEmployeeInfo(firstName, lastName, email);
+            await _dbContext.SaveChangesAsync();
+            return;
 
         }
     }

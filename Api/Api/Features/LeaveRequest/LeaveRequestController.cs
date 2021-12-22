@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Api.Core.ResponseDto;
 using Api.ExternalServices.Interfaces;
+using Api.Models;
 using Api.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +25,12 @@ namespace Api.Features.LeaveRequest
             _emailService = emailService;
             _employeeService = employeeService;
             _securityService = securityService;
+        }
+        [HttpGet("GetRequestsByName")]
+        public async Task<ActionResult<List<FullRequestInfoDto>>> GetRequestsByName(string employeeName)
+        {
+            var requests = await _requestService.GetFullRequestInfoByEmployeeAsync(employeeName);
+            return Ok(requests);
         }
 
         [HttpPost("CreateRequest")]

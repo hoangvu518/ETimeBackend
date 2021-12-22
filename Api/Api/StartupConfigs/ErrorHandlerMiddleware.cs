@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Api.Exceptions;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -27,21 +29,23 @@ namespace Api.StartupConfigs
                 var response = context.Response;
                 response.ContentType = "application/json";
 
-                //switch (error)
-                //{
-                //    case AppException e:
-                //        // custom application error
-                //        response.StatusCode = (int)HttpStatusCode.BadRequest;
-                //        break;
-                //    case KeyNotFoundException e:
-                //        // not found error
-                //        response.StatusCode = (int)HttpStatusCode.NotFound;
-                //        break;
-                //    default:
-                //        // unhandled error
-                //        response.StatusCode = (int)HttpStatusCode.InternalServerError;
-                //        break;
-                //}
+                switch (error)
+                {
+                    case RecordDuplicateException e:
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        break;
+                    case BusinessLogicException e:
+                        response.StatusCode = (int)HttpStatusCode.BadRequest;
+                        break;
+                    case RecordNotFoundException e:
+                        response.StatusCode = (int)HttpStatusCode.NotFound;
+                        break;
+                    default:
+                        // unhandled error
+                        response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        break;
+                }
+
 
                 var result = JsonSerializer.Serialize(new { message = error?.Message });
                 await response.WriteAsync(result);
