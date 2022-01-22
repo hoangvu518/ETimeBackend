@@ -4,8 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Api.Infrastructure;
-using Api.Services;
-using Api.Services.Interfaces;
 using Api.StartupConfigs;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Antiforgery;
@@ -47,8 +45,6 @@ namespace Api
             //.AddNewtonsoftJson(options => options.SerializerSettings.MaxDepth = );
             services.AddDbContext<TimeportalContext>(options =>
             {
-                //options.UseSqlServer(Configuration.GetConnectionString("AppConnectionString"))
-                //.EnableSensitiveDataLogging();
                 if (_currentEnvironment.IsDevelopment())
                 {
                     options.UseSqlServer(Configuration.GetConnectionString("AppConnectionString"))

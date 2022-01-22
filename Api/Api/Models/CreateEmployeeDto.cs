@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Api.Features.Employee
+namespace Api.Models
 {
     public class CreateEmployeeDto
     {
-        public string FirstName { get;  set; }
-        public string LastName { get;  set; }
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
         public int? ManagerId { get;  set; }
         public decimal? Salary { get;  set; }
-        public string Email { get;  set; }
+        public string Email { get; set; } = string.Empty;
     }
 
     public class CreateEmployeeDtoValidator : AbstractValidator<CreateEmployeeDto>

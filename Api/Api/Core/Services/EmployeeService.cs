@@ -1,15 +1,14 @@
 ﻿using Api.Infrastructure;
 using Api.Models;
-using Api.Services.Dto;
-using Api.Services.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Api.Exceptions;
+using Api.Core.Interfaces;
 
-namespace Api.Services
+namespace Api.Core.Services
 {
     public class EmployeeService : IEmployeeService
     {
@@ -19,24 +18,24 @@ namespace Api.Services
             _dbContext = dbContext;
         }
  
-        public async Task<Employee> GetEmployeeAsync(int employeeId)
+        public async Task<Employee?> GetEmployeeAsync(int employeeId)
         {
             var employee = await _dbContext.Employee.FindAsync(employeeId);
             return employee;
                                                     
         }
 
-        public async Task CreateEmployeeAsync(string firstName, string lastName, int? managerId, decimal? salary, string email)
+        public async Task<Employee?> CreateEmployeeAsync(string firstName, string lastName, int? managerId, decimal? salary, string email)
         {
             var emailAlreadyExists = await _dbContext.Employee.AnyAsync(x => x.Email == email);
             if (emailAlreadyExists)
             {
                 throw new RecordDuplicateException($"Email already exists. Cannot add new employee with duplicate emails.");
             }
-
             var employee = new Employee(firstName, lastName, managerId, salary, email);
             await _dbContext.Employee.AddAsync(employee);
             await _dbContext.SaveChangesAsync();
+            return employee;
 
         }
 
@@ -64,18 +63,10 @@ namespace Api.Services
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<List<EmployeeSimpleDto>> GetAllEmployeesAsync()
+        public async Task<List<Employee>> GetAllEmployeesAsync()
         {
-            var employees = await _dbContext.Employee.Select(x => new EmployeeSimpleDto
-            {
-                Id = x.Id,
-                FirstName = x.FirstName,
-                LastName = x.LastName,
-                Email = x.Email
-            }).ToListAsync();
-
+            var employees = await _dbContext.Employee.ToListAsync();
             return employees;
-
         }
 
         public async Task UpdateEmployeeAsync(int employeeId, string firstName, string lastName, string email)
@@ -89,7 +80,64 @@ namespace Api.Services
             employee.UpdateEmployeeInfo(firstName, lastName, email);
             await _dbContext.SaveChangesAsync();
             return;
+        }
 
+
+        public async Task ApproveRequestAsync(int requestId)
+        {
+            var request = await _dbContext.Request.FindAsync(requestId);
+
+            if (request is null)
+            {
+                throw new RecordNotFoundException("Invalid reqest Id");
+            }
+
+            request.Approve();
+            //_dbContext.Attach(request);
+            //_dbContext.Entry(request).Property(nameof(Request.IsApproved)).IsModified = true;
+            await _dbContext.SaveChangesAsync();
+
+        }
+
+        public async Task<Request?> CreateRequestAsync(string requestTitle, string requestDescription, int requestTypeId, int requestedBy)
+        {
+            var requestTypeExits = await _dbContext.RequestType.AnyAsync(x => x.Id == requestTypeId);
+            if (!requestTypeExits)
+            {
+                throw new RecordNotFoundException("Invalid request type Id");
+            }
+
+            var requestEmployeeExists = await _dbContext.Employee.AnyAsync(x => x.Id == requestedBy);
+
+            if (!requestEmployeeExists)
+            {
+                throw new RecordNotFoundException("Invalid employee Id");
+            }
+
+            var unapprovedRequestCount = await _dbContext.Request.CountAsync(x => x.RequestedByEmployeeId == requestedBy && x.IsApproved == false);
+            if (unapprovedRequestCount >= 5)
+            {
+                throw new BusinessLogicException("An employee can have a maximum of 5 unapproved requests.");
+            }
+
+            var newRequest = new Request(requestTitle, requestDescription, requestTypeId, requestedBy);
+            await _dbContext.Request.AddAsync(newRequest);
+            await _dbContext.SaveChangesAsync();
+
+            return newRequest;
+        }
+
+        public Task<List<Request>> GetRequestsByEmployeeNameAsync(string employeeName)
+        {
+            var request = _dbContext.Request.Where(x => x.RequestedByEmployee.FirstName == employeeName || x.RequestedByEmployee.LastName == employeeName)
+                                            .ToListAsync();
+            return request;
+        }
+
+        public async Task<Request?> GetRequestAsync(int requestId)
+        {
+            var request = await _dbContext.Request.FindAsync(requestId);
+            return request;
         }
     }
 }

@@ -4,11 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Api.Features.Lookup
+namespace Api.Models
 {
     public class CreateRequestTypeDto
     {
-        public string RequestTypeName { get; set; }
+        public string RequestTypeName { get; set; } = string.Empty;
     }
 
     public class CreateRequestTypeDtoValidator : AbstractValidator<CreateRequestTypeDto>

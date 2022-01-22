@@ -1,16 +1,15 @@
 ﻿using Api.Infrastructure;
 using Api.Models;
-using Api.Services.Interfaces;
 using System;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Api.Core.ResponseDto;
 using System.ComponentModel.DataAnnotations;
 using Api.Exceptions;
+using Api.Core.Interfaces;
 
-namespace Api.Services
+namespace Api.Core.Services
 {
     public class LookupService: ILookupService
     {
@@ -20,7 +19,7 @@ namespace Api.Services
             _dbContext = dbContext;
         }
 
-        public async Task CreateRequestTypeAsync(string requestName)
+        public async Task<RequestType?> CreateRequestTypeAsync(string requestName)
         {
             var requestNameExists = await _dbContext.RequestType.AnyAsync(x => x.Name == requestName);
             if (requestNameExists)
@@ -31,14 +30,19 @@ namespace Api.Services
             var newRequestType = new RequestType(requestName);
             await _dbContext.RequestType.AddAsync(newRequestType);
             await _dbContext.SaveChangesAsync();
-            
+            return newRequestType;   
         }
 
-        public async Task<List<RequestTypeDto>> GetAllRequestTypesAsync()
+        public async Task<List<RequestType>> GetAllRequestTypesAsync()
         {
-            var requestTypes = await _dbContext.RequestType.Select(x => new RequestTypeDto { Id = x.Id, Name = x.Name })
-                                                            .ToListAsync();
+            var requestTypes = await _dbContext.RequestType.ToListAsync();
             return requestTypes;
+        }
+
+        public async Task<RequestType?> GetRequestType(int id)
+        {
+            var requestType = await _dbContext.RequestType.FindAsync(id);
+            return requestType;
         }
     }
 }

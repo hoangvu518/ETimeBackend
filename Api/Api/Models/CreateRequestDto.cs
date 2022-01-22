@@ -4,12 +4,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Api.Features.LeaveRequest
+namespace Api.Models
 {
     public class CreateRequestDto
     {
-        public string RequestTitle { get; set; }
-        public string RequestDescription { get; set; }
+        public string RequestTitle { get; set; } = string.Empty;
+        public string RequestDescription { get; set; } = string.Empty;
         public int RequestTypeId { get; set; }
 
         public int RequestedBy { get; set; }

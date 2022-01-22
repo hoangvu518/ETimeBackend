@@ -9,9 +9,9 @@ namespace Api.Infrastructure
 {
     public partial class TimeportalContext : DbContext
     {
-        public TimeportalContext()
-        {
-        }
+        //public TimeportalContext(DbContextOptions options):base(options)
+        //{
+        //}
 
         public TimeportalContext(DbContextOptions<TimeportalContext> options)
             : base(options)

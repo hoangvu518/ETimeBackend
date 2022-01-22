@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Api.Core.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Api.ExternalServices.Interfaces
+namespace Api.Core.Services
 {
     public class EmailService : IEmailService
     {

@@ -1,15 +1,16 @@
-﻿using Api.Core.ResponseDto;
+﻿
 using Api.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Api.Services.Interfaces
+namespace Api.Core.Interfaces
 {
     public interface ILookupService
     {
-        Task<List<RequestTypeDto>> GetAllRequestTypesAsync();
-        Task CreateRequestTypeAsync(string requestName);
+        Task<RequestType?> GetRequestType(int id);
+        Task<List<RequestType>> GetAllRequestTypesAsync();
+        Task<RequestType?> CreateRequestTypeAsync(string requestName);
     }
 }

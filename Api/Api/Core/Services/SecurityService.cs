@@ -1,12 +1,12 @@
-﻿using Api.Infrastructure;
-using Api.Services.Interfaces;
+﻿using Api.Core.Interfaces;
+using Api.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Api.Services
+namespace Api.Core.Services
 {
     //Deal with roles and stuff
     public class SecurityService : ISecurityService
@@ -16,6 +16,7 @@ namespace Api.Services
         public SecurityService(TimeportalContext dbContext, IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public string GetFTBUserId()
