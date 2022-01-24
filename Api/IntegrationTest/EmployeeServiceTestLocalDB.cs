@@ -10,21 +10,18 @@ using Xunit;
 
 namespace IntegrationTest
 {
-    //dbContext is newed up and disposed for every test using constructor and dispose methods.
-    public class EmployeeServceTestSetupTearDown: IDisposable
+    public class EmployeeServiceTestLocalDB: IDisposable
     {
         private TimeportalContext _context;
-        public EmployeeServceTestSetupTearDown()
+        public EmployeeServiceTestLocalDB()
         {
-            var options = new DbContextOptionsBuilder<TimeportalContext>().UseSqlite("DataSource=:memory:").Options;
-            var dbContext = new TimeportalContext(options);
+            //var options = new DbContextOptionsBuilder<TimeportalContext>().UseSqlite("DataSource=:memory:").Options;
 
-            // SQLite needs to open connection to the DB.
-            // Not required for in-memory-database and MS SQL.
-            dbContext.Database.OpenConnection();
-            dbContext.Database.EnsureCreated();
+            var options = new DbContextOptionsBuilder<TimeportalContext>().UseSqlServer(
+              "Server=(localdb)\\MSSQLLocalDB;Database=TimePortal;Trusted_Connection=True;").Options;
+            
 
-            _context = dbContext;
+            _context = new TimeportalContext(options);
         }
 
         public void Dispose()
@@ -50,7 +47,5 @@ namespace IntegrationTest
             count.Should().Be(1);
 
         }
-
-
     }
 }

@@ -42,20 +42,7 @@ namespace Api
                         options.SerializerSettings.MaxDepth = 1;
                         options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
                     });
-            //.AddNewtonsoftJson(options => options.SerializerSettings.MaxDepth = );
-            services.AddDbContext<TimeportalContext>(options =>
-            {
-                if (_currentEnvironment.IsDevelopment())
-                {
-                    options.UseSqlServer(Configuration.GetConnectionString("AppConnectionString"))
-                        .EnableSensitiveDataLogging(); ;
-                }
-                else
-                {
-                    options.UseSqlServer(Configuration.GetConnectionString("AppConnectionString"));
-                }
-            }
-            );
+            ConfigureDatabases(services);
 
             services.InjectDependencies();
             //uncomment for CSRF
@@ -81,8 +68,27 @@ namespace Api
             });
         }
 
+
+        //virtual function so it can be overriten by Test startup class
+        public virtual void ConfigureDatabases(IServiceCollection services)
+        {
+            services.AddDbContext<TimeportalContext>(options =>
+            {
+                if (_currentEnvironment.IsDevelopment())
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("AppConnectionString"))
+                        .EnableSensitiveDataLogging(); ;
+                }
+                else
+                {
+                    options.UseSqlServer(Configuration.GetConnectionString("AppConnectionString"));
+                }
+            }
+);
+        }
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IAntiforgery antiforgery)
+        public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env, IAntiforgery antiforgery)
         {
             if (env.IsDevelopment())
             {
