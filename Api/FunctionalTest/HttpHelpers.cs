@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FunctionalTest
 {
-    public static class HttpService
+    public static class HttpHelpers
     {
         public static async Task<T> FromHttpResponseMessage<T>(HttpResponseMessage result)
         {

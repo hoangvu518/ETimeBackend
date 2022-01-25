@@ -9,6 +9,8 @@ using System.Text;
 using Xunit;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using FluentAssertions;
+using System.Net;
 
 namespace FunctionalTest
 {
@@ -23,47 +25,63 @@ namespace FunctionalTest
             {
                 AllowAutoRedirect = false
             });
-
-
             //var test = context.Employee.ToList();
         }
-
         [Fact]
         public async void Test1()
         {
 
             var response = await _client.GetAsync("api/Employee/GetAll");
 
-            var data = await HttpService.FromHttpResponseMessage<List<Employee>>(response);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+            //var data = await HttpHelpers.FromHttpResponseMessage<List<Employee>>(response);
+
+            
         }
 
         [Fact]
-        public async void Test2()
+        public async void Employee_Should_Be_Created()
         {
+            var requestModel = new CreateEmployeeDto { Email = "Hoang@gmail.com", FirstName = "Hoang", LastName = "Pham", ManagerId = null, Salary = 10000 };
+            var requestPayload = HttpHelpers.ToJson(requestModel);
+            var response = await _client.PostAsync("api/Employee/Create", requestPayload);
 
-            var scope = _factory.Services.GetService<IServiceScopeFactory>().CreateScope();
-            var context = scope.ServiceProvider.GetService<TimeportalContext>();
-            context.Employee.Add(new Employee("Hoang", "Pham", null, 100, "hoang@gmail.com"));
-            context.SaveChanges();
-           
+            var path = response.Headers.Location.AbsolutePath;
+            var getResponse = await _client.GetAsync(path);
+            var data = await HttpHelpers.FromHttpResponseMessage<Employee>(getResponse);
+
+            data.Email.Should().Be("Hoang@gmail.com");
+            data.FirstName.Should().Be("Hoang");
+            data.LastName.Should().Be("Pham");
+            data.ManagerId.Should().BeNull();
+            data.Salary.Should().Be(10000);
+            
         }
-        [Fact]
-        public async void Test3()
+
+
+        [Theory]
+        [MemberData(nameof(TestData.BadCreateEmployeeDto), MemberType = typeof(TestData))]
+        public async void Employee_Should_Not_Be_Created_With_Error_404(CreateEmployeeDto model)
         {
+            var requestPayload = HttpHelpers.ToJson(model);
+            
+            var response = await _client.PostAsync("api/Employee/Create", requestPayload);
 
+            var statusCode = response.StatusCode;
 
-            var scope = _factory.Services.GetService<IServiceScopeFactory>().CreateScope();
-            var context = scope.ServiceProvider.GetService<TimeportalContext>();
-            context.Employee.Add(new Employee("Hoang", "Pham", null, 100, "hoang@gmail.com"));
-            context.SaveChanges();
+            statusCode.Should().Be(HttpStatusCode.BadRequest);
         }
+
+        
         [Fact]
         public async void IfYouNeedAccessToDBCOntext()
         {
             var scope = _factory.Services.GetService<IServiceScopeFactory>().CreateScope();
             var context = scope.ServiceProvider.GetService<TimeportalContext>();
             var test = context.Employee.ToList();
-
         }
+
+ 
     }
 }

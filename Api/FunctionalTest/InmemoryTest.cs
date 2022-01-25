@@ -31,7 +31,7 @@ namespace FunctionalTest
 
             var response = await _client.GetAsync("api/Employee/GetAll");
 
-            var data = await HttpService.FromHttpResponseMessage<List<Employee>>(response);
+            var data = await HttpHelpers.FromHttpResponseMessage<List<Employee>>(response);
 
         }
 
